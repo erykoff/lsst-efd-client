@@ -11,14 +11,21 @@ def serialize(data, measurement=None, tag_columns=None, **extra_tags):
     if isinstance(data, bytes):
         return data
     elif isinstance(data, str):
-        return data.encode('utf-8')
-    elif hasattr(data, 'to_lineprotocol'):
+        return data.encode("utf-8")
+    elif hasattr(data, "to_lineprotocol"):
         return data.to_lineprotocol()
     elif pd is not None and isinstance(data, pd.DataFrame):
-        return dataframe.serialize(data, measurement, tag_columns, **extra_tags)
+        return dataframe.serialize(
+            data, measurement, tag_columns, **extra_tags
+        )
     elif isinstance(data, dict):
         return mapping.serialize(data, measurement, **extra_tags)
-    elif hasattr(data, '__iter__'):
-        return b'\n'.join([serialize(i, measurement, tag_columns, **extra_tags) for i in data])
+    elif hasattr(data, "__iter__"):
+        return b"\n".join(
+            [
+                serialize(i, measurement, tag_columns, **extra_tags)
+                for i in data
+            ]
+        )
     else:
-        raise ValueError('Invalid input', data)
+        raise ValueError("Invalid input", data)

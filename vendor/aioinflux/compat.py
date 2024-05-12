@@ -1,6 +1,8 @@
 import warnings
 
-no_pandas_warning = "Pandas/Numpy is not available. Support for 'dataframe' mode is disabled."
+no_pandas_warning = (
+    "Pandas/Numpy is not available. Support for 'dataframe' mode is disabled."
+)
 
 try:
     import pandas as pd
@@ -10,4 +12,4 @@ except ModuleNotFoundError:
     np = None
     warnings.warn(no_pandas_warning)
 
-__all__ = ['no_pandas_warning', 'pd', 'np']
+__all__ = ["no_pandas_warning", "pd", "np"]

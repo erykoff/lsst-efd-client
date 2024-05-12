@@ -3,7 +3,15 @@ import json
 import logging
 import warnings
 from functools import wraps
-from typing import TypeVar, Union, AnyStr, Mapping, Iterable, Optional, AsyncGenerator
+from typing import (
+    TypeVar,
+    Union,
+    AnyStr,
+    Mapping,
+    Iterable,
+    Optional,
+    AsyncGenerator,
+)
 
 import aiohttp
 
@@ -11,15 +19,15 @@ from . import serialization
 from .compat import *
 
 if pd:
-    PointType = TypeVar('PointType', Mapping, dict, bytes, pd.DataFrame)
-    ResultType = TypeVar('ResultType', dict, bytes, pd.DataFrame)
+    PointType = TypeVar("PointType", Mapping, dict, bytes, pd.DataFrame)
+    ResultType = TypeVar("ResultType", dict, bytes, pd.DataFrame)
 else:
-    PointType = TypeVar('PointType', Mapping, dict, bytes)
-    ResultType = TypeVar('ResultType', dict, bytes)
+    PointType = TypeVar("PointType", Mapping, dict, bytes)
+    ResultType = TypeVar("ResultType", dict, bytes)
 
 # Aioinflux uses logging mainly for debugging purposes.
 # Please attach your own handlers if you need logging.
-logger = logging.getLogger('aioinflux')
+logger = logging.getLogger("aioinflux")
 
 
 def runner(coro):
@@ -27,7 +35,7 @@ def runner(coro):
 
     @wraps(coro)
     def inner(self, *args, **kwargs):
-        if self.mode == 'async':
+        if self.mode == "async":
             return coro(self, *args, **kwargs)
         return self._loop.run_until_complete(coro(self, *args, **kwargs))
 
@@ -36,6 +44,7 @@ def runner(coro):
 
 class InfluxDBError(Exception):
     """Raised when an server-side error occurs"""
+
     pass
 
 
@@ -46,18 +55,20 @@ class InfluxDBWriteError(InfluxDBError):
         self.status = resp.status
         self.headers = resp.headers
         self.reason = resp.reason
-        super().__init__(f'Error writing data ({self.status} - {self.reason}): '
-                         f'{self.headers.get("X-Influxdb-Error", "")}')
+        super().__init__(
+            f"Error writing data ({self.status} - {self.reason}): "
+            f'{self.headers.get("X-Influxdb-Error", "")}'
+        )
 
 
 class InfluxDBClient:
     def __init__(
         self,
-        host: str = 'localhost',
+        host: str = "localhost",
         port: int = 8086,
-        path: str = '/',
-        mode: str = 'async',
-        output: str = 'json',
+        path: str = "/",
+        mode: str = "async",
+        output: str = "json",
         db: Optional[str] = None,
         database: Optional[str] = None,
         ssl: bool = False,
@@ -67,7 +78,7 @@ class InfluxDBClient:
         password: Optional[str] = None,
         timeout: Optional[Union[aiohttp.ClientTimeout, float]] = None,
         loop: Optional[asyncio.AbstractEventLoop] = None,
-        **kwargs
+        **kwargs,
     ):
         """
         :class:`~aioinflux.client.InfluxDBClient`  holds information necessary
@@ -130,7 +141,9 @@ class InfluxDBClient:
         if username:
             kwargs.update(auth=aiohttp.BasicAuth(username, password))
         if unix_socket:
-            kwargs.update(connector=aiohttp.UnixConnector(unix_socket, loop=self._loop))
+            kwargs.update(
+                connector=aiohttp.UnixConnector(unix_socket, loop=self._loop)
+            )
         if timeout:
             if isinstance(timeout, aiohttp.ClientTimeout):
                 kwargs.update(timeout=timeout)
@@ -166,24 +179,26 @@ class InfluxDBClient:
 
     @mode.setter
     def mode(self, mode):
-        if mode not in ('async', 'blocking'):
-            raise ValueError('Invalid running mode')
+        if mode not in ("async", "blocking"):
+            raise ValueError("Invalid running mode")
         self._mode = mode
 
     @output.setter
     def output(self, output):
-        if pd is None and output == 'dataframe':
+        if pd is None and output == "dataframe":
             raise ValueError(no_pandas_warning)
-        if output not in ('json', 'dataframe'):
-            raise ValueError('Invalid output format')
+        if output not in ("json", "dataframe"):
+            raise ValueError("Invalid output format")
         self._output = output
 
     @db.setter
     def db(self, db):
         self._db = db
         if not db:
-            warnings.warn('No default databases is set. '
-                          'Database must be specified when querying/writing.')
+            warnings.warn(
+                "No default databases is set. "
+                "Database must be specified when querying/writing."
+            )
 
     def __enter__(self):
         return self
@@ -202,8 +217,10 @@ class InfluxDBClient:
             asyncio.ensure_future(self._session.close(), loop=self._loop)
 
     def __repr__(self):
-        items = [f'{k}={v}' for k, v in vars(self).items() if not k.startswith('_')]
-        items.append(f'mode={self.mode}')
+        items = [
+            f"{k}={v}" for k, v in vars(self).items() if not k.startswith("_")
+        ]
+        items.append(f"mode={self.mode}")
         return f'{type(self).__name__}({", ".join(items)})'
 
     @runner
@@ -216,12 +233,12 @@ class InfluxDBClient:
     async def ping(self) -> dict:
         """Pings InfluxDB
 
-         Returns a dictionary containing the headers of the response from ``influxd``.
-         """
+        Returns a dictionary containing the headers of the response from ``influxd``.
+        """
         if not self._session:
             await self.create_session()
-        async with self._session.get(self.url.format(endpoint='ping')) as resp:
-            logger.debug(f'{resp.status}: {resp.reason}')
+        async with self._session.get(self.url.format(endpoint="ping")) as resp:
+            logger.debug(f"{resp.status}: {resp.reason}")
             return dict(resp.headers.items())
 
     @runner
@@ -273,12 +290,16 @@ class InfluxDBClient:
             await self.create_session()
         if precision is not None:
             # FIXME: Implement. Related issue: aioinflux/pull/13
-            raise NotImplementedError("'precision' parameter is not supported yet")
-        data = serialization.serialize(data, measurement, tag_columns, **extra_tags)
-        params = {'db': db or self.db}
+            raise NotImplementedError(
+                "'precision' parameter is not supported yet"
+            )
+        data = serialization.serialize(
+            data, measurement, tag_columns, **extra_tags
+        )
+        params = {"db": db or self.db}
         if rp:
-            params['rp'] = rp
-        url = self.url.format(endpoint='write')
+            params["rp"] = rp
+        url = self.url.format(endpoint="write")
         async with self._session.post(url, params=params, data=data) as resp:
             if resp.status == 204:
                 return True
@@ -289,7 +310,7 @@ class InfluxDBClient:
         self,
         q: AnyStr,
         *,
-        epoch: str = 'ns',
+        epoch: str = "ns",
         chunked: bool = False,
         chunk_size: Optional[int] = None,
         db: Optional[str] = None,
@@ -314,7 +335,7 @@ class InfluxDBClient:
 
         async def _chunked_generator(url, data, dataframe):
             async with self._session.post(url, data=data) as resp:
-                logger.debug(f'{resp.status} (CHUNKED): {q!r}')
+                logger.debug(f"{resp.status} (CHUNKED): {q!r}")
                 # Hack to avoid aiohttp raising ValueError('Line is too long')
                 # The number 128 is arbitrary (may be too large/small).
                 resp.content._high_water *= 128
@@ -323,7 +344,7 @@ class InfluxDBClient:
                     chunk = json.loads(chunk)
                     self._check_error(chunk)
                     chunk_count += 1
-                    logger.debug(f'Yielding chunk #{chunk_count:03d}')
+                    logger.debug(f"Yielding chunk #{chunk_count:03d}")
                     if dataframe:
                         yield serialization.dataframe.parse(chunk)
                     else:
@@ -336,39 +357,43 @@ class InfluxDBClient:
         # See https://github.com/influxdata/docs.influxdata.com/issues/1807
         if not isinstance(chunked, bool):
             raise ValueError("'chunked' must be a boolean")
-        data = dict(q=q, db=db or self.db, chunked=str(chunked).lower(), epoch=epoch)
+        data = dict(
+            q=q, db=db or self.db, chunked=str(chunked).lower(), epoch=epoch
+        )
         if chunked and chunk_size:
-            data['chunk_size'] = chunk_size
+            data["chunk_size"] = chunk_size
 
-        url = self.url.format(endpoint='query')
+        url = self.url.format(endpoint="query")
         if chunked:
-            if self.mode != 'async':
+            if self.mode != "async":
                 raise ValueError("Can't use 'chunked' with non-async mode")
             else:
-                return _chunked_generator(url, data, self.output == 'dataframe')
+                return _chunked_generator(
+                    url, data, self.output == "dataframe"
+                )
 
         async with self._session.post(url, data=data) as resp:
             data = await resp.read()
-            logger.debug(f'{resp.status}: {q}')
+            logger.debug(f"{resp.status}: {q}")
 
         data = json.loads(data)
         self._check_error(data)
-        if self.output == 'json':
+        if self.output == "json":
             return data
-        elif self.output == 'dataframe':
+        elif self.output == "dataframe":
             return serialization.dataframe.parse(data)
         else:
-            raise ValueError('Invalid output format')
+            raise ValueError("Invalid output format")
 
     @staticmethod
     def _check_error(response):
         """Checks for JSON error messages and raises Python exception"""
-        if 'error' in response:
-            raise InfluxDBError(response['error'])
-        elif 'results' in response:
-            for statement in response['results']:
-                if 'error' in statement:
-                    msg = '{d[error]} (statement {d[statement_id]})'
+        if "error" in response:
+            raise InfluxDBError(response["error"])
+        elif "results" in response:
+            for statement in response["results"]:
+                if "error" in statement:
+                    msg = "{d[error]} (statement {d[statement_id]})"
                     raise InfluxDBError(msg.format(d=statement))
 
     # InfluxQL - Data management
@@ -414,7 +439,9 @@ class InfluxDBClient:
 
     def show_tag_values(self, key, measurement=None):
         if measurement:
-            return self.query(f'SHOW TAG VALUES FROM "{measurement}" WITH key = "{key}"')
+            return self.query(
+                f'SHOW TAG VALUES FROM "{measurement}" WITH key = "{key}"'
+            )
         return self.query(f'SHOW TAG VALUES WITH key = "{key}"')
 
     def show_retention_policies(self):

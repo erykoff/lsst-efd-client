@@ -33,15 +33,15 @@ def iterpoints(resp: dict, parser: Optional[Callable] = None) -> Generator:
     :param parser: Optional parser function/callable
     :return: Generator object
     """
-    for statement in resp['results']:
-        if 'series' not in statement:
+    for statement in resp["results"]:
+        if "series" not in statement:
             continue
-        for series in statement['series']:
+        for series in statement["series"]:
             if parser is None:
-                yield from (x for x in series['values'])
-            elif 'meta' in inspect.signature(parser).parameters:
-                meta = {k: series[k] for k in series if k != 'values'}
-                meta['statement_id'] = statement['statement_id']
-                yield from (parser(*x, meta=meta) for x in series['values'])
+                yield from (x for x in series["values"])
+            elif "meta" in inspect.signature(parser).parameters:
+                meta = {k: series[k] for k in series if k != "values"}
+                meta["statement_id"] = statement["statement_id"]
+                yield from (parser(*x, meta=meta) for x in series["values"])
             else:
-                yield from (parser(*x) for x in series['values'])
+                yield from (parser(*x) for x in series["values"])
