@@ -4,13 +4,13 @@ import logging
 import warnings
 from functools import wraps
 from typing import (
+    AnyStr,
+    AsyncGenerator,
+    Iterable,
+    Mapping,
+    Optional,
     TypeVar,
     Union,
-    AnyStr,
-    Mapping,
-    Iterable,
-    Optional,
-    AsyncGenerator,
 )
 
 import aiohttp

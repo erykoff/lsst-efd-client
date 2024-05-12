@@ -1,15 +1,17 @@
-import enum
-import ciso8601
-import time
 import decimal
+import enum
+import time
 import typing
 from collections import Counter
-from typing import TypeVar, Optional, Mapping, Union
 from datetime import datetime
+from typing import Mapping, Optional, TypeVar, Union
+
+import ciso8601
+
+from ..compat import pd
 
 # noinspection PyUnresolvedReferences
 from .common import *  # noqa
-from ..compat import pd
 
 __all__ = [
     "lineprotocol",

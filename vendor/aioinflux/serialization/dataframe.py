@@ -1,10 +1,10 @@
 import re
 from functools import reduce
 from itertools import chain
-from typing import Union, Dict, List
+from typing import Dict, List, Union
 
-import pandas as pd
 import numpy as np
+import pandas as pd
 
 from .common import *
 
