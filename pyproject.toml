@@ -22,13 +22,14 @@ classifiers = [
 ]
 requires-python = ">=3.10"
 dependencies = [
-    "numpy==1.23.5",
-    "aioinflux",
+    "numpy",
+    "aiohttp>=3.0",
+    "ciso8601",
     "pandas",
     "astropy",
     "pyyaml",
     "tables",
-    "kafkit"
+    "kafkit",
 ]
 dynamic = ["version"]
 
