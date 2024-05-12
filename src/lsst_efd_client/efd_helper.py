@@ -6,13 +6,13 @@ from typing import Any
 from urllib.parse import urljoin
 
 import aiohttp
-import aioinflux
 import astropy.units as u
 import pandas as pd
 import requests
 from astropy.time import Time, TimeDelta
 from kafkit.registry.aiohttp import RegistryApi
 
+from ._vendor import aioinflux
 from .auth_helper import NotebookAuth
 from .efd_utils import SyncSchemaParser, merge_packed_time_series
 

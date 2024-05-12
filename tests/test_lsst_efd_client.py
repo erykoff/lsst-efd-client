@@ -9,7 +9,6 @@ import numpy as np
 import pandas as pd
 import pytest
 import vcr
-from aioinflux import InfluxDBClient
 from astropy.time import Time, TimeDelta
 from kafkit.registry.sansio import MockRegistryApi
 
@@ -20,6 +19,7 @@ from lsst_efd_client import (
     rendezvous_dataframes,
     resample,
 )
+from lsst_efd_client._vendor.aioinflux import InfluxDBClient
 from lsst_efd_client.efd_helper import EfdClientTools
 
 PATH = pathlib.Path(__file__).parent.absolute()
